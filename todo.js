@@ -2,6 +2,7 @@ const form = document.getElementById("todo-form");
 const input = document.getElementById("todo-input");
 const todoLane = document.getElementById("todo-lane");
 const draftingLane = document.querySelector(".lanes .swim-lane:nth-child(2)");
+const checkingLane = document.querySelector(".lanes .swim-lane:nth-child(3)");
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
@@ -42,7 +43,9 @@ form.addEventListener("submit", (e) => {
   deleteButton.classList.add("delete-btn");
 
   deleteButton.addEventListener("click", () => {
-    taskContainer.remove();
+    if (confirm("Are you sure you want to delete this task?")) {
+      taskContainer.remove();
+    }
   });
 
   taskContainer.appendChild(taskTitle);
@@ -62,6 +65,7 @@ function toggleEditMode(taskContainer) {
 
   if (isEditing) {
     const taskTitle = taskContainer.querySelector(".task-title");
+
     const notesField = document.createElement("textarea");
     notesField.classList.add("notes-field");
     notesField.placeholder = "Add notes here...";
@@ -91,18 +95,79 @@ function toggleEditMode(taskContainer) {
       taskContainer.querySelector(".task-due-date").innerText = `Due Date: ${dueDateValue || "Not Set"}`;
       taskContainer.querySelector(".task-ship-date").innerText = `Ship Date: ${shipDateValue || "Not Set"}`;
 
+      const drafterField = taskContainer.querySelector(".drafter-field");
+      const draftingStartDateField = taskContainer.querySelector(".drafting-start-date-field");
+      const checkerField = taskContainer.querySelector(".checker-field");
+      const checkingStartDateField = taskContainer.querySelector(".checking-start-date-field");
+
+      if (drafterField && draftingStartDateField) {
+        const drafterValue = drafterField.value;
+        const draftingStartDateValue = draftingStartDateField.value;
+        taskContainer.querySelector(".task-drafter").innerText = `Drafter: ${drafterValue || "Not Set"}`;
+        taskContainer.querySelector(".task-drafting-start-date").innerText = `Drafting Start Date: ${draftingStartDateValue || "Not Set"}`;
+      }
+
+      if (checkerField && checkingStartDateField) {
+        const checkerValue = checkerField.value;
+        const checkingStartDateValue = checkingStartDateField.value;
+        taskContainer.querySelector(".task-checker").innerText = `Checker: ${checkerValue || "Not Set"}`;
+        taskContainer.querySelector(".task-checking-start-date").innerText = `Checking Start Date: ${checkingStartDateValue || "Not Set"}`;
+      }
+
       taskContainer.classList.remove("editing");
 
-      taskContainer.querySelector(".notes-field")?.remove();
-      taskContainer.querySelector(".due-date-field")?.remove();
-      taskContainer.querySelector(".ship-date-field")?.remove();
-      taskContainer.querySelector(".save-btn")?.remove();
+      notesField.remove();
+      dueDateField.remove();
+      shipDateField.remove();
+      saveButton.remove();
+
+      if (drafterField && draftingStartDateField) {
+        drafterField.remove();
+        draftingStartDateField.remove();
+      }
+
+      if (checkerField && checkingStartDateField) {
+        checkerField.remove();
+        checkingStartDateField.remove();
+      }
     });
 
     taskContainer.appendChild(notesField);
     taskContainer.appendChild(dueDateField);
     taskContainer.appendChild(shipDateField);
     taskContainer.appendChild(saveButton);
+
+    if (taskContainer.querySelector(".task-drafter") && taskContainer.querySelector(".task-drafting-start-date")) {
+      const drafterInputField = document.createElement("input");
+      drafterInputField.type = "text";
+      drafterInputField.classList.add("drafter-field");
+      drafterInputField.placeholder = "Add drafter name...";
+      drafterInputField.value = taskContainer.querySelector(".task-drafter").innerText.replace("Drafter: ", "") || "";
+
+      const draftingStartDateInputField = document.createElement("input");
+      draftingStartDateInputField.type = "date";
+      draftingStartDateInputField.classList.add("drafting-start-date-field");
+      draftingStartDateInputField.value = taskContainer.querySelector(".task-drafting-start-date").innerText.replace("Drafting Start Date: ", "") || "";
+
+      taskContainer.appendChild(drafterInputField);
+      taskContainer.appendChild(draftingStartDateInputField);
+    }
+
+    if (taskContainer.querySelector(".task-checker") && taskContainer.querySelector(".task-checking-start-date")) {
+      const checkerInputField = document.createElement("input");
+      checkerInputField.type = "text";
+      checkerInputField.classList.add("checker-field");
+      checkerInputField.placeholder = "Add checker name...";
+      checkerInputField.value = taskContainer.querySelector(".task-checker").innerText.replace("Checker: ", "") || "";
+
+      const checkingStartDateInputField = document.createElement("input");
+      checkingStartDateInputField.type = "date";
+      checkingStartDateInputField.classList.add("checking-start-date-field");
+      checkingStartDateInputField.value = taskContainer.querySelector(".task-checking-start-date").innerText.replace("Checking Start Date: ", "") || "";
+
+      taskContainer.appendChild(checkerInputField);
+      taskContainer.appendChild(checkingStartDateInputField);
+    }
   }
 }
 
@@ -129,12 +194,15 @@ document.querySelectorAll('.swim-lane').forEach(lane => {
       lane.insertBefore(dragging, afterElement);
     }
   });
-  
+
   lane.addEventListener('drop', (e) => {
     e.preventDefault();
     const dragging = document.querySelector('.is-dragging');
     if (lane === draftingLane) {
       addDraftingFields(dragging);
+    }
+    if (lane === checkingLane) {
+      addCheckingFields(dragging);
     }
   });
 });
@@ -157,16 +225,32 @@ function addDraftingFields(taskContainer) {
   if (!taskContainer.querySelector(".task-drafter")) {
     const drafter = document.createElement("p");
     drafter.classList.add("task-drafter");
-    drafter.innerText = "Drafter: Not Set";
+    drafter.innerText = "Drafter: Enter Drafter";
 
     const draftingStartDate = document.createElement("p");
     draftingStartDate.classList.add("task-drafting-start-date");
     draftingStartDate.innerText = "Drafting Start Date: Not Set";
 
     const editButton = taskContainer.querySelector(".edit-btn");
-    
-    // Insert new fields before the edit button
+
     taskContainer.insertBefore(drafter, editButton);
     taskContainer.insertBefore(draftingStartDate, editButton);
+  }
+}
+
+function addCheckingFields(taskContainer) {
+  if (!taskContainer.querySelector(".task-checker")) {
+    const checker = document.createElement("p");
+    checker.classList.add("task-checker");
+    checker.innerText = "Checker: Enter Checker";
+
+    const checkingStartDate = document.createElement("p");
+    checkingStartDate.classList.add("task-checking-start-date");
+    checkingStartDate.innerText = "Checking Start Date: Not Set";
+
+    const editButton = taskContainer.querySelector(".edit-btn");
+
+    taskContainer.insertBefore(checker, editButton);
+    taskContainer.insertBefore(checkingStartDate, editButton);
   }
 }

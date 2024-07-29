@@ -143,10 +143,3 @@
 .is-dragging {
   opacity: 0.5;
 }
-
-/* ---- TASK DETAILS ---- */
-.task-drafter,
-.task-drafting-start-date {
-    font-size: 14px;
-    color: #555;
-}
